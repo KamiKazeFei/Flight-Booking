@@ -1,20 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CalendarIcon, ArrowRightLeft, Users } from "lucide-react"
-import { format } from "date-fns"
-import { AirportSelect } from "@/components/search/AirportSelect"
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CalendarIcon, ArrowRightLeft, Users } from "lucide-react";
+import { format } from "date-fns";
+import { AirportSelect } from "@/components/search/AirportSelect";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   setOrigin,
   setDestination,
@@ -23,90 +33,99 @@ import {
   setReturnDate,
   setPassengers,
   setTripType,
-} from "@/lib/redux/slices/bookingSlice"
-import { airports } from "@/lib/data/airports"
+} from "@/lib/redux/slices/bookingSlice";
+import { airports } from "@/lib/data/airports";
 
 export function SearchForm() {
-  const router = useRouter()
-  const dispatch = useAppDispatch()
-  const { origin, destination, departDate, returnDate, passengers, tripType } = useAppSelector((state) => state.booking)
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { origin, destination, departDate, returnDate, passengers, tripType } =
+    useAppSelector((state) => state.booking);
 
-  const [departDateObj, setDepartDateObj] = useState<Date | undefined>(departDate ? new Date(departDate) : new Date())
+  const [departDateObj, setDepartDateObj] = useState<Date | undefined>(
+    departDate ? new Date(departDate) : new Date()
+  );
   const [returnDateObj, setReturnDateObj] = useState<Date | undefined>(
-    returnDate ? new Date(returnDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  )
-  const [dateError, setDateError] = useState<string | null>(null)
+    returnDate
+      ? new Date(returnDate)
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  );
+  const [dateError, setDateError] = useState<string | null>(null);
 
   // Initialize with default values if not set
   useEffect(() => {
     if (!origin) {
-      dispatch(setOrigin(airports.find((a) => a.code === "JFK")!))
+      dispatch(setOrigin(airports.find((a) => a.code === "JFK")!));
     }
     if (!destination) {
-      dispatch(setDestination(airports.find((a) => a.code === "HND")!))
+      dispatch(setDestination(airports.find((a) => a.code === "HND")!));
     }
-  }, [dispatch, origin, destination])
+  }, [dispatch, origin, destination]);
 
   const handleDepartDateChange = (date: Date | undefined) => {
     if (date) {
-      setDepartDateObj(date)
-      dispatch(setDepartDate(date.toISOString()))
+      setDepartDateObj(date);
+      dispatch(setDepartDate(date.toISOString()));
 
       // Validate return date is after depart date
       if (returnDateObj && date > returnDateObj) {
-        setDateError("Return date must be after departure date")
+        setDateError("Return date must be after departure date");
       } else {
-        setDateError(null)
+        setDateError(null);
       }
     }
-  }
+  };
 
   const handleReturnDateChange = (date: Date | undefined) => {
     if (date) {
-      setReturnDateObj(date)
-      dispatch(setReturnDate(date.toISOString()))
+      setReturnDateObj(date);
+      dispatch(setReturnDate(date.toISOString()));
 
       // Validate return date is after depart date
       if (departDateObj && date < departDateObj) {
-        setDateError("Return date must be after departure date")
+        setDateError("Return date must be after departure date");
       } else {
-        setDateError(null)
+        setDateError(null);
       }
     }
-  }
+  };
 
   const handleSwapLocations = () => {
-    dispatch(swapOriginDestination())
-  }
+    dispatch(swapOriginDestination());
+  };
 
   const handleTripTypeChange = (value: string) => {
-    dispatch(setTripType(value as "roundTrip" | "oneWay"))
-  }
+    dispatch(setTripType(value as "roundTrip" | "oneWay"));
+  };
 
   const handlePassengersChange = (value: string) => {
-    dispatch(setPassengers(Number.parseInt(value)))
-  }
+    dispatch(setPassengers(Number.parseInt(value)));
+  };
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Validate form before submission
     if (tripType === "roundTrip" && departDateObj && returnDateObj) {
       if (departDateObj > returnDateObj) {
-        setDateError("Return date must be after departure date")
-        return
+        setDateError("Return date must be after departure date");
+        return;
       }
     }
 
-    router.push("/flights")
-  }
+    router.push("/flights");
+  };
 
   return (
     <Card className="mt-[-50px] z-20 relative shadow-lg">
       <CardContent className="p-6">
         <form onSubmit={handleSearch}>
           <div className="mb-4">
-            <RadioGroup defaultValue={tripType} className="flex space-x-4" onValueChange={handleTripTypeChange}>
+            <RadioGroup
+              defaultValue={tripType}
+              className="flex space-x-4"
+              onValueChange={handleTripTypeChange}
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="roundTrip" id="roundTrip" />
                 <Label htmlFor="roundTrip">Round Trip</Label>
@@ -159,18 +178,37 @@ export function SearchForm() {
               </Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {departDateObj ? format(departDateObj, "PPP") : <span>Pick a date</span>}
+                    {departDateObj ? (
+                      format(departDateObj, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={departDateObj}
+                    captionLayout="dropdown"
                     onSelect={handleDepartDateChange}
-                    initialFocus
-                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    startMonth={
+                      new Date(new Date().getFullYear(), new Date().getMonth())
+                    }
+                    endMonth={
+                      returnDateObj ??
+                      new Date(
+                        new Date().getFullYear() + 1,
+                        new Date().getMonth()
+                      )
+                    }
+                    disabled={(date) =>
+                      date < new Date(new Date().setHours(0, 0, 0, 0))
+                    }
                   />
                 </PopoverContent>
               </Popover>
@@ -182,9 +220,16 @@ export function SearchForm() {
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {returnDateObj ? format(returnDateObj, "PPP") : <span>Pick a date</span>}
+                      {returnDateObj ? (
+                        format(returnDateObj, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -194,7 +239,9 @@ export function SearchForm() {
                       onSelect={handleReturnDateChange}
                       initialFocus
                       disabled={(date) =>
-                        departDateObj ? date < departDateObj : date < new Date(new Date().setHours(0, 0, 0, 0))
+                        departDateObj
+                          ? date < departDateObj
+                          : date < new Date(new Date().setHours(0, 0, 0, 0))
                       }
                     />
                   </PopoverContent>
@@ -205,7 +252,10 @@ export function SearchForm() {
               <Label htmlFor="passengers" className="mb-1 block">
                 Passengers
               </Label>
-              <Select defaultValue={passengers.toString()} onValueChange={handlePassengersChange}>
+              <Select
+                defaultValue={passengers.toString()}
+                onValueChange={handlePassengersChange}
+              >
                 <SelectTrigger className="w-full">
                   <div className="flex items-center">
                     <Users className="mr-2 h-4 w-4 text-gray-500" />
@@ -223,13 +273,18 @@ export function SearchForm() {
             </div>
           </div>
 
-          {dateError && <div className="text-red-500 text-sm mb-4">{dateError}</div>}
+          {dateError && (
+            <div className="text-red-500 text-sm mb-4">{dateError}</div>
+          )}
 
-          <Button type="submit" className="w-full bg-rose-600 hover:bg-rose-700 text-white">
+          <Button
+            type="submit"
+            className="w-full bg-rose-600 hover:bg-rose-700 text-white"
+          >
             Search Flights
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }
